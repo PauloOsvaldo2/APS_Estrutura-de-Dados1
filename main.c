@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <time.h>
+#include <ctype.h>
 
 typedef struct Livro {
     struct Livro *anterior;
@@ -177,49 +178,126 @@ void adicionarLivro(Livro** Livros) {
     *Livros = novo_Livro;
 }
 
-Livro* dividirLista(Livro* cabeca) {
-    if (cabeca == NULL || cabeca->proximo == NULL) {
-        return NULL;
+int compararStrings(const char *s1, const char *s2) {
+    while (*s1 && *s2) {
+        int c1 = tolower((unsigned char)*s1);
+        int c2 = tolower((unsigned char)*s2);
+        
+        if (c1 != c2) {
+            return c1 - c2;
+        }
+        
+        s1++;
+        s2++;
     }
-    Livro* rapido = cabeca->proximo;
-    Livro* lento = cabeca;
-    while (rapido != NULL && rapido->proximo != NULL) {
-        rapido = rapido->proximo->proximo;
-        lento = lento->proximo;
-    }
-    Livro* segundaParte = lento->proximo;
-    lento->proximo = NULL;
-    if (segundaParte != NULL) {
-        segundaParte->anterior = NULL;
-    }
-    return segundaParte;
+    return tolower((unsigned char)*s1) - tolower((unsigned char)*s2);
 }
 
-Livro* mesclarListas(Livro* esquerda, Livro* direita) {
-    if (esquerda == NULL) return direita;
-    if (direita == NULL) return esquerda;
-    if (strcmp(esquerda->Titulo, direita->Titulo) <= 0) {
-        esquerda->proximo = mesclarListas(esquerda->proximo, direita);
-        esquerda->proximo->anterior = esquerda;
-        esquerda->anterior = NULL;
-        return esquerda;
-    } else {
-        direita->proximo = mesclarListas(esquerda, direita->proximo);
-        direita->proximo->anterior = direita;
-        direita->anterior = NULL;
-        return direita;
+void Dividir_lista(Livro *fonte, Livro **frente, Livro **tras) {
+    Livro *rapido;
+    Livro *lento;
+    
+    if (fonte == NULL || fonte->proximo == NULL) {
+        *frente = fonte;
+        *tras = NULL;
+        return;
+    }
+    
+    lento = fonte;
+    rapido = fonte->proximo;
+    
+    while (rapido != NULL) {
+        rapido = rapido->proximo;
+        if (rapido != NULL) {
+            lento = lento->proximo;
+            rapido = rapido->proximo;
+        }
+    }
+    
+    *frente = fonte;
+    *tras = lento->proximo;
+    lento->proximo = NULL;
+    if (*tras != NULL) {
+        (*tras)->anterior = NULL;
+    }
+}
+
+Livro* merge(Livro *a, Livro *b, char *criterio) {
+    Livro *resultado = NULL;
+    
+    if (a == NULL) 
+        return b;
+    else if (b == NULL)
+        return a;
+    
+    if (strcmp(criterio, "Titulo") == 0) {
+        if (compararStrings(a->Titulo, b->Titulo) <= 0) {
+            resultado = a;
+            resultado->proximo = merge(a->proximo, b, criterio);
+        } else {
+            resultado = b;
+            resultado->proximo = merge(a, b->proximo, criterio);
+        }
+    } 
+    else if (strcmp(criterio, "Ano_lancamento") == 0) {
+        if (a->Ano_lancamento <= b->Ano_lancamento) {
+            resultado = a;
+            resultado->proximo = merge(a->proximo, b, criterio);
+        } else {
+            resultado = b;
+            resultado->proximo = merge(a, b->proximo, criterio);
+        }
+    }
+    
+    if (resultado->proximo != NULL) {
+        resultado->proximo->anterior = resultado;
+    }
+    resultado->anterior = NULL;
+    return resultado;
+}
+
+void mergeSort(Livro **headRef, char *criterio) {
+    Livro *cabeca = *headRef;
+    Livro *a;
+    Livro *b;
+    
+    if (cabeca == NULL || cabeca->proximo == NULL) {
+        return;
+    }
+    
+    Dividir_lista(cabeca, &a, &b);
+    
+    mergeSort(&a, criterio);
+    mergeSort(&b, criterio);
+    
+    *headRef = merge(a, b, criterio);
+    if (*headRef != NULL && (*headRef)->proximo != NULL) {
+        (*headRef)->proximo->anterior = *headRef;
     }
 }
 
 void ordenadorMergeSort(Livro** Livros) {
-    Livro* cabeca = *Livros;
-    if (cabeca == NULL || cabeca->proximo == NULL) {
+    if (*Livros == NULL || (*Livros)->proximo == NULL) {
+        return; // Lista vazia ou com apenas um elemento
+    }
+    
+    int opcao;
+    printf("\nMergeSort - Escolha o critério:\n");
+    printf("1 - Ordenar por título\n");
+    printf("2 - Ordenar por Ano\n");
+    scanf("%d", &opcao);
+    
+    if (opcao == 1) {
+        mergeSort(Livros, "Titulo"); // Ordenar por título
+        printf("Livros ordenados por título.\n");
+
+    } else if (opcao == 2) {
+        mergeSort(Livros, "Ano_lancamento"); // Ordenar por ano
+        printf("Livros ordenados por ano.\n");
+    } else {
+        printf("Opção inválida!\n");
         return;
     }
-    Livro* segundaParte = dividirLista(cabeca);
-    ordenadorMergeSort(&cabeca);
-    ordenadorMergeSort(&segundaParte);
-    *Livros = mesclarListas(cabeca, segundaParte);
 }
 
 void trocarDadosLivro(Livro* a, Livro* b) {
@@ -240,21 +318,97 @@ void trocarDadosLivro(Livro* a, Livro* b) {
     strcpy(b->Nome_autor, temp.Nome_autor);
 }
 
-void ordenadorSelectionSort(Livro** Livros) {
-    Livro* atual = *Livros;
+Livro* encontrarMinimo(Livro *inicio, char *criterio) {
+    Livro *min = inicio;
+    Livro *atual = inicio->proximo;
+    
     while (atual != NULL) {
-        Livro* min = atual;
-        Livro* temp = atual->proximo;
-        while (temp != NULL) {
-            if (strcmp(temp->Nome_autor, min->Nome_autor) < 0) {
-                min = temp;
+        if (strcmp(criterio, "genero") == 0) {
+            if (compararStrings(atual->Genero_livro, min->Genero_livro) < 0) {
+                min = atual;
             }
-            temp = temp->proximo;
-        }
-        if (min != atual) {
-            trocarDadosLivro(atual, min);
+        } 
+        else if (strcmp(criterio, "autor") == 0) {
+            if (compararStrings(atual->Nome_autor, min->Nome_autor) < 0) {
+                min = atual;
+            }
         }
         atual = atual->proximo;
+    }
+    return min;
+}
+
+// Função para trocar dois nós na lista
+void trocarNos(Livro **headRef, Livro *a, Livro *b) {
+    if (a == b) return;
+    
+    // Trocar os ponteiros anteriores
+    Livro *tempAnterior = a->anterior;
+    a->anterior = b->anterior;
+    b->anterior = tempAnterior;
+    
+    // Trocar os ponteiros próximos
+    Livro *tempProximo = a->proximo;
+    a->proximo = b->proximo;
+    b->proximo = tempProximo;
+    
+    // Atualizar os ponteiros dos nós vizinhos
+    if (a->anterior != NULL) a->anterior->proximo = a;
+    if (a->proximo != NULL) a->proximo->anterior = a;
+    if (b->anterior != NULL) b->anterior->proximo = b;
+    if (b->proximo != NULL) b->proximo->anterior = b;
+    
+    // Atualizar o cabeçalho da lista se necessário
+    if (*headRef == a) {
+        *headRef = b;
+    } else if (*headRef == b) {
+        *headRef = a;
+    }
+}
+
+// Função principal do Selection Sort
+void selectionSort(Livro **headRef, char *criterio) {
+    if (*headRef == NULL || (*headRef)->proximo == NULL) {
+        return;
+    }
+    
+    Livro *atual = *headRef;
+    
+    while (atual != NULL) {
+        Livro *min = encontrarMinimo(atual, criterio);
+        
+        if (min != atual) {
+            trocarNos(headRef, atual, min);
+            // Após a troca, 'atual' agora está na posição do 'min'
+            // então avançamos para o próximo nó (que está no lugar do antigo 'atual')
+            atual = min->proximo;
+        } else {
+            atual = atual->proximo;
+        }
+    }
+}
+
+void ordenadorSelectionSort(Livro** Livros) {
+    if (*Livros == NULL || (*Livros)->proximo == NULL) {
+        return; // Lista vazia ou com apenas um elemento
+    }
+    
+    int opcao;
+    printf("\nSelectionSort - Escolha o critério:\n");
+    printf("1 - Ordenar por Genero\n");
+    printf("2 - Ordenar por Autor\n");
+    scanf("%d", &opcao);
+    
+    if (opcao == 1) {
+        selectionSort(Livros, "genero");
+        printf("Livros ordenados por Genero.\n");
+
+    } else if (opcao == 2) {
+        selectionSort(Livros, "autor");
+        printf("Livros ordenados por Autor.\n");
+    } else {
+        printf("Opção inválida!\n");
+        return;
     }
 }
 
@@ -417,7 +571,7 @@ void buscaBinaria(Livro *livros) {
     int opcao;
     printf("\nBusca Binária - Escolha o critério:\n");
     printf("1 - Buscar por ano de lançamento\n");
-    printf("2 - Buscar por gênero principal\n");
+    printf("2 - Buscar por Titulo\n");
     printf("Escolha: ");
     scanf("%d", &opcao);
 
@@ -478,15 +632,14 @@ void buscaBinaria(Livro *livros) {
     } 
     else if (opcao == 2) {
         // BUSCA POR GÊNERO -----------------------------------------
-        char genero[100];
-        printf("Digite o gênero principal: ");
-        scanf(" %[^\n]", genero);
+        char titulo[100];
+        printf("Digite o Titulo: ");
+        scanf(" %[^\n]", titulo);
         
         Livro *inicio = livros;
         Livro *fim = NULL;
         Livro *encontrado = NULL;
         
-        // Primeiro encontramos qualquer livro com este gênero
         while (inicio != fim) {
             Livro *lento = inicio;
             Livro *rapido = inicio->proximo;
@@ -498,7 +651,7 @@ void buscaBinaria(Livro *livros) {
             
             Livro *meio = lento;
             
-            int cmp = strcmp(meio->Genero_livro, genero);
+            int cmp = strcmp(meio->Titulo, titulo);
             if (cmp == 0) {
                 encontrado = meio;
                 break;
@@ -510,16 +663,16 @@ void buscaBinaria(Livro *livros) {
         }
         
         if (encontrado != NULL) {
-            printf("\nLivros encontrados do gênero '%s':\n", genero);
+            printf("\nLivros encontrados do titulo '%s':\n", titulo);
             
             // Encontrar o primeiro livro com este gênero
             Livro *atual = encontrado;
-            while (atual->anterior != NULL && strcmp(atual->anterior->Genero_livro, genero) == 0) {
+            while (atual->anterior != NULL && strcmp(atual->anterior->Titulo, titulo) == 0) {
                 atual = atual->anterior;
             }
             
             // Imprimir todos os livros com este gênero
-            while (atual != NULL && strcmp(atual->Genero_livro, genero) == 0) {
+            while (atual != NULL && strcmp(atual->Titulo, titulo) == 0) {
                 printf("\nTítulo: %s\n", atual->Titulo);
                 printf("Autor: %s\n", atual->Nome_autor);
                 printf("Gênero Principal: %s\n", atual->Genero_livro);
@@ -529,7 +682,7 @@ void buscaBinaria(Livro *livros) {
                 atual = atual->proximo;
             }
         } else {
-            printf("Nenhum livro encontrado do gênero '%s'\n", genero);
+            printf("Nenhum livro encontrado do Titulo '%s'\n", titulo);
         }
     }
     else {
@@ -545,32 +698,34 @@ void buscaLinear(Livro *livros) {
 
     int opcao;
     printf("\nBusca Linear - Escolha o critério:\n");
-    printf("1 - Buscar por título\n");
+    printf("1 - Buscar por Genero\n");
     printf("2 - Buscar por autor\n");
     scanf("%d", &opcao);
 
     if (opcao == 1) {
-        char titulo[100];
-        printf("Digite o título do livro (ou parte dele): ");
-        scanf(" %[^\n]", titulo);
+        char genero[100];
+        printf("Digite o Genero do livro (ou parte dele): ");
+        scanf(" %[^\n]", genero);
 
-        printf("\nLivros encontrados com '%s' no título:\n", titulo);
+        printf("\nLivros encontrados com '%s' no Genero:\n", genero);
         Livro *atual = livros;
         bool encontrado = false;
 
         while (atual != NULL) {
-            if (strstr(atual->Titulo, titulo) != NULL) {
+            if (strstr(atual->Genero_livro, genero) != NULL) {
                 printf("\nTítulo: %s\n", atual->Titulo);
                 printf("Autor: %s\n", atual->Nome_autor);
-                printf("Ano: %d\n", atual->Ano_lancamento);
+                printf("Gênero Principal: %s\n", atual->Genero_livro);
+                printf("Gênero Secundário: %s\n", atual->Genero_secundario_livro);
                 printf("Editora: %s\n", atual->Editora);
+                printf("Ano: %d\n", atual->Ano_lancamento);
                 encontrado = true;
             }
             atual = atual->proximo;
         }
 
         if (!encontrado) {
-            printf("Nenhum livro encontrado com '%s' no título\n", titulo);
+            printf("Nenhum livro encontrado com '%s' no Genero\n", genero);
         }
     } else if (opcao == 2) {
         char autor[100];
@@ -585,8 +740,10 @@ void buscaLinear(Livro *livros) {
             if (strstr(atual->Nome_autor, autor) != NULL) {
                 printf("\nTítulo: %s\n", atual->Titulo);
                 printf("Autor: %s\n", atual->Nome_autor);
-                printf("Ano: %d\n", atual->Ano_lancamento);
+                printf("Gênero Principal: %s\n", atual->Genero_livro);
+                printf("Gênero Secundário: %s\n", atual->Genero_secundario_livro);
                 printf("Editora: %s\n", atual->Editora);
+                printf("Ano: %d\n", atual->Ano_lancamento);
                 encontrado = true;
             }
             atual = atual->proximo;
@@ -632,8 +789,7 @@ int main() {
                 adicionarLivro(&topo);
                 break;
             case 2:
-                ordenadorMergeSort(&topo);
-                printf("Livros ordenados");
+              ordenadorMergeSort(&topo);
                 break;
             case 3:
                 ordenadorSelectionSort(&topo);
