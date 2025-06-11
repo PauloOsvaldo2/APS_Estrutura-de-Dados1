@@ -341,50 +341,71 @@ Livro* encontrarMinimo(Livro *inicio, char *criterio) {
 // Função para trocar dois nós na lista
 void trocarNos(Livro **headRef, Livro *a, Livro *b) {
     if (a == b) return;
-    
-    // Trocar os ponteiros anteriores
-    Livro *tempAnterior = a->anterior;
-    a->anterior = b->anterior;
-    b->anterior = tempAnterior;
-    
-    // Trocar os ponteiros próximos
-    Livro *tempProximo = a->proximo;
-    a->proximo = b->proximo;
-    b->proximo = tempProximo;
-    
-    // Atualizar os ponteiros dos nós vizinhos
-    if (a->anterior != NULL) a->anterior->proximo = a;
-    if (a->proximo != NULL) a->proximo->anterior = a;
-    if (b->anterior != NULL) b->anterior->proximo = b;
-    if (b->proximo != NULL) b->proximo->anterior = b;
-    
-    // Atualizar o cabeçalho da lista se necessário
-    if (*headRef == a) {
-        *headRef = b;
-    } else if (*headRef == b) {
-        *headRef = a;
+
+    // Guarda os vizinhos originais
+    Livro *aPrev = a->anterior;
+    Livro *aNext = a->proximo;
+    Livro *bPrev = b->anterior;
+    Livro *bNext = b->proximo;
+
+    // Caso 1: a e b são adjacentes (a -> b)
+    if (a->proximo == b) {
+        a->proximo = bNext;
+        b->anterior = aPrev;
+        a->anterior = b;
+        b->proximo = a;
+        
+        if (aPrev) aPrev->proximo = b;
+        else *headRef = b;
+        
+        if (bNext) bNext->anterior = a;
+    }
+    // Caso 2: a e b são adjacentes (b -> a)
+    else if (b->proximo == a) {
+        b->proximo = aNext;
+        a->anterior = bPrev;
+        b->anterior = a;
+        a->proximo = b;
+        
+        if (bPrev) bPrev->proximo = a;
+        else *headRef = a;
+        
+        if (aNext) aNext->anterior = b;
+    }
+    // Caso 3: Nós não adjacentes
+    else {
+        a->anterior = bPrev;
+        a->proximo = bNext;
+        b->anterior = aPrev;
+        b->proximo = aNext;
+        
+        if (aPrev) aPrev->proximo = b;
+        else *headRef = b;
+        
+        if (aNext) aNext->anterior = b;
+        
+        if (bPrev) bPrev->proximo = a;
+        else *headRef = a;
+        
+        if (bNext) bNext->anterior = a;
     }
 }
 
 // Função principal do Selection Sort
 void selectionSort(Livro **headRef, char *criterio) {
-    if (*headRef == NULL || (*headRef)->proximo == NULL) {
-        return;
-    }
+    if (*headRef == NULL || (*headRef)->proximo == NULL) return;
     
     Livro *atual = *headRef;
-    
     while (atual != NULL) {
         Livro *min = encontrarMinimo(atual, criterio);
         
         if (min != atual) {
             trocarNos(headRef, atual, min);
-            // Após a troca, 'atual' agora está na posição do 'min'
-            // então avançamos para o próximo nó (que está no lugar do antigo 'atual')
-            atual = min->proximo;
-        } else {
-            atual = atual->proximo;
+            // Mantém 'atual' na mesma posição (agora ocupada pelo nó trocado)
+            // e avança após processar os vizinhos
         }
+        // Avança para o próximo nó independentemente
+        atual = atual->proximo;
     }
 }
 
