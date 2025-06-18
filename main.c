@@ -793,8 +793,8 @@ int main() {
     while(loop) {
         printf("\n Menu:\n");
         printf("Digite: 1 / Cadastrar Livros\n");
-        printf("Digite: 2 / Ordenar livros pro MergeSort(titulo)\n");
-        printf("Digite: 3 / Ordenar livros por SelectionSort(autor)\n");
+        printf("Digite: 2 / Ordenar livros pro MergeSort\n");
+        printf("Digite: 3 / Ordenar livros por SelectionSort\n");
         printf("Digite: 4 / Remover Livro\n");
         printf("Digite: 5 / Emprestar Livro\n");
         printf("Digite: 6 / Devolver livro\n");
