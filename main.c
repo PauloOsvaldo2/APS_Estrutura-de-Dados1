@@ -404,7 +404,7 @@ void selectionSort(Livro **headRef, char *criterio) {
 
 void ordenadorSelectionSort(Livro** Livros) {
     if (*Livros == NULL || (*Livros)->proximo == NULL) {
-        return; // Lista vazia ou com apenas um elemento
+        return;
     }
     
     int opcao;
@@ -430,10 +430,10 @@ void imprimirLista(Livro **lista) {
     Livro *atual = *lista;
     printf("\nLista de Livros:\n");
     while(atual != NULL) {
-        printf("\nTítulo: %s\n", atual->Titulo);
+        printf("\nTitulo: %s\n", atual->Titulo);
         printf("Ano: %d\n", atual->Ano_lancamento);
-        printf("Gênero: %s\n", atual->Genero_livro);
-        printf("Gênero secundario: %s\n", atual->Genero_secundario_livro);
+        printf("Genero: %s\n", atual->Genero_livro);
+        printf("Genero secundario: %s\n", atual->Genero_secundario_livro);
         printf("Editora: %s\n", atual->Editora);
         printf("Autor: %s\n\n", atual->Nome_autor);
         atual = atual->proximo;
@@ -800,7 +800,7 @@ int main() {
         printf("Digite: 5 / Emprestar Livro\n");
         printf("Digite: 6 / Devolver livro\n");
         printf("Digite: 7 / Lista Livros\n");
-        printf("Digite: 8 / Busca Binária\n");
+        printf("Digite: 8 / Busca Binaria\n");
         printf("Digite: 9 / Busca Linear\n");
         printf("Digite: 10 / Lista emprestimos\n");
         printf("Digite: 11 / Sair\n");
