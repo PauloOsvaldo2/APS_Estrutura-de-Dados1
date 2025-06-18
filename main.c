@@ -338,7 +338,6 @@ Livro* encontrarMinimo(Livro *inicio, char *criterio) {
     return min;
 }
 
-// Função para trocar dois nós na lista
 void trocarNos(Livro **headRef, Livro *a, Livro *b) {
     if (a == b) return;
 
@@ -348,7 +347,6 @@ void trocarNos(Livro **headRef, Livro *a, Livro *b) {
     Livro *bPrev = b->anterior;
     Livro *bNext = b->proximo;
 
-    // Caso 1: a e b são adjacentes (a -> b)
     if (a->proximo == b) {
         a->proximo = bNext;
         b->anterior = aPrev;
@@ -360,7 +358,6 @@ void trocarNos(Livro **headRef, Livro *a, Livro *b) {
         
         if (bNext) bNext->anterior = a;
     }
-    // Caso 2: a e b são adjacentes (b -> a)
     else if (b->proximo == a) {
         b->proximo = aNext;
         a->anterior = bPrev;
@@ -372,7 +369,6 @@ void trocarNos(Livro **headRef, Livro *a, Livro *b) {
         
         if (aNext) aNext->anterior = b;
     }
-    // Caso 3: Nós não adjacentes
     else {
         a->anterior = bPrev;
         a->proximo = bNext;
@@ -391,7 +387,6 @@ void trocarNos(Livro **headRef, Livro *a, Livro *b) {
     }
 }
 
-// Função principal do Selection Sort
 void selectionSort(Livro **headRef, char *criterio) {
     if (*headRef == NULL || (*headRef)->proximo == NULL) return;
     
@@ -401,10 +396,7 @@ void selectionSort(Livro **headRef, char *criterio) {
         
         if (min != atual) {
             trocarNos(headRef, atual, min);
-            // Mantém 'atual' na mesma posição (agora ocupada pelo nó trocado)
-            // e avança após processar os vizinhos
         }
-        // Avança para o próximo nó independentemente
         atual = atual->proximo;
     }
 }
@@ -597,7 +589,6 @@ void buscaBinaria(Livro *livros) {
     scanf("%d", &opcao);
 
     if (opcao == 1) {
-        // BUSCA POR ANO --------------------------------------------
         int ano;
         printf("Digite o ano de lançamento: ");
         scanf("%d", &ano);
@@ -606,7 +597,6 @@ void buscaBinaria(Livro *livros) {
         Livro *fim = NULL;
         Livro *encontrado = NULL;
         
-        // Primeiro encontramos qualquer livro com o ano desejado
         while (inicio != fim) {
             Livro *lento = inicio;
             Livro *rapido = inicio->proximo;
@@ -631,13 +621,11 @@ void buscaBinaria(Livro *livros) {
         if (encontrado != NULL) {
             printf("\nLivros encontrados no ano %d:\n", ano);
             
-            // Encontrar o primeiro livro com este ano
             Livro *atual = encontrado;
             while (atual->anterior != NULL && atual->anterior->Ano_lancamento == ano) {
                 atual = atual->anterior;
             }
             
-            // Imprimir todos os livros com este ano
             while (atual != NULL && atual->Ano_lancamento == ano) {
                 printf("\nTítulo: %s\n", atual->Titulo);
                 printf("Autor: %s\n", atual->Nome_autor);
@@ -652,7 +640,6 @@ void buscaBinaria(Livro *livros) {
         }
     } 
     else if (opcao == 2) {
-        // BUSCA POR GÊNERO -----------------------------------------
         char titulo[100];
         printf("Digite o Titulo: ");
         scanf(" %[^\n]", titulo);
@@ -686,13 +673,11 @@ void buscaBinaria(Livro *livros) {
         if (encontrado != NULL) {
             printf("\nLivros encontrados do titulo '%s':\n", titulo);
             
-            // Encontrar o primeiro livro com este gênero
             Livro *atual = encontrado;
             while (atual->anterior != NULL && strcmp(atual->anterior->Titulo, titulo) == 0) {
                 atual = atual->anterior;
             }
             
-            // Imprimir todos os livros com este gênero
             while (atual != NULL && strcmp(atual->Titulo, titulo) == 0) {
                 printf("\nTítulo: %s\n", atual->Titulo);
                 printf("Autor: %s\n", atual->Nome_autor);
@@ -777,8 +762,6 @@ void buscaLinear(Livro *livros) {
         printf("Opção inválida!\n");
     }
 }
-
-
 
 int main() {
     Livro* topo = NULL;
