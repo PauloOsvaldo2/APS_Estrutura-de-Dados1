@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <time.h>
 #include <ctype.h>
+#include <strings.h>
 
 typedef struct Livro {
     struct Livro *anterior;
@@ -659,7 +660,7 @@ void buscaBinaria(Livro *livros) {
             
             Livro *meio = lento;
             
-            int cmp = strcmp(meio->Titulo, titulo);
+            int cmp = strcasecmp(meio->Titulo, titulo);
             if (cmp == 0) {
                 encontrado = meio;
                 break;
@@ -674,11 +675,11 @@ void buscaBinaria(Livro *livros) {
             printf("\nLivros encontrados do titulo '%s':\n", titulo);
             
             Livro *atual = encontrado;
-            while (atual->anterior != NULL && strcmp(atual->anterior->Titulo, titulo) == 0) {
+            while (atual->anterior != NULL && strcasecmp(atual->anterior->Titulo, titulo) == 0) {
                 atual = atual->anterior;
             }
             
-            while (atual != NULL && strcmp(atual->Titulo, titulo) == 0) {
+            while (atual != NULL && strcasecmp(atual->Titulo, titulo) == 0) {
                 printf("\nTítulo: %s\n", atual->Titulo);
                 printf("Autor: %s\n", atual->Nome_autor);
                 printf("Gênero Principal: %s\n", atual->Genero_livro);
@@ -694,6 +695,23 @@ void buscaBinaria(Livro *livros) {
     else {
         printf("Opção inválida!\n");
     }
+}
+
+char* meu_strcasestr(const char *haystack, const char *needle) {
+    if (!*needle) return (char*)haystack;
+    
+    for (; *haystack; haystack++) {
+        if (tolower((unsigned char)*haystack) == tolower((unsigned char)*needle)) {
+            const char *h = haystack + 1;
+            const char *n = needle + 1;
+            while (*h && *n && tolower((unsigned char)*h) == tolower((unsigned char)*n)) {
+                h++;
+                n++;
+            }
+            if (!*n) return (char*)haystack;
+        }
+    }
+    return NULL;
 }
 
 void buscaLinear(Livro *livros) {
@@ -718,7 +736,7 @@ void buscaLinear(Livro *livros) {
         bool encontrado = false;
 
         while (atual != NULL) {
-            if (strstr(atual->Genero_livro, genero) != NULL) {
+            if (meu_strcasestr(atual->Genero_livro, genero) != NULL) {
                 printf("\nTítulo: %s\n", atual->Titulo);
                 printf("Autor: %s\n", atual->Nome_autor);
                 printf("Gênero Principal: %s\n", atual->Genero_livro);
@@ -743,7 +761,7 @@ void buscaLinear(Livro *livros) {
         bool encontrado = false;
 
         while (atual != NULL) {
-            if (strstr(atual->Nome_autor, autor) != NULL) {
+            if (meu_strcasestr(atual->Nome_autor, autor) != NULL) {
                 printf("\nTítulo: %s\n", atual->Titulo);
                 printf("Autor: %s\n", atual->Nome_autor);
                 printf("Gênero Principal: %s\n", atual->Genero_livro);
@@ -815,7 +833,6 @@ int main() {
                 devolverParaLivros(&cabeca, &topo, chave);
                 break;
             case 7:
-                //printf("Livros cadastrados:\n");
                 imprimirLista(&topo);
                 break;
             case 8:
